@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {PlayerScore, SortType} from '../components/App/App';
 
 const tableSort = (data: PlayerScore[], field: SortType, sortNumber: number) => {
@@ -14,17 +14,13 @@ const tableSort = (data: PlayerScore[], field: SortType, sortNumber: number) => 
 }
 
 type SetDataType = (word: PlayerScore[] | ((prevState: PlayerScore[]) => PlayerScore[])) => void;
-type SortState = {
-    name: number
-    hit: number,
-    rateFire: number
-}
 
-export const useSort = (setData: SetDataType, sortState: SortState, field: SortType) => {
+export const useSort = (setData: SetDataType, field: SortType): [number, React.Dispatch<React.SetStateAction<number>>] => {
+    const [sortState, setSortState] = useState(-1);
     useEffect(() => {
         setData(prev => {
-            return [...tableSort(prev, field, sortState[field])]
+            return [...tableSort(prev, field, sortState)]
         })
-        //eslint-disable-next-line
-    }, [sortState[field]])
+    }, [sortState, field, setData])
+    return [sortState, setSortState]
 }

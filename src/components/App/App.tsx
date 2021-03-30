@@ -1,8 +1,10 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Table} from 'react-bootstrap';
 import {useSort} from '../../hooks/useSort';
 import {generatePlayerScores} from '../../util';
+import {SortIcon} from '../SortIcon';
 import classes from './App.module.scss'
+
 
 export interface PlayerScore {
     rating: number
@@ -11,22 +13,21 @@ export interface PlayerScore {
     rateFire: number
 }
 
-export type SortType = 'name' | 'hit' | 'rateFire';
+export type SortType = 'name' | 'hit' | 'rateFire' | 'rating';
 
 const App = () => {
-    const [initialData, setInitialData] = useState(useCallback(() => generatePlayerScores(10), []));
+    const [initialData, setInitialData] = useState(() => generatePlayerScores(10));
     const [data, setData] = useState<PlayerScore[]>(initialData);
     const [searchText, setSearchText] = useState('');
 
-    // Contains values for sorting in table 1,-1
-    const [sortState, setSortState] = useState({
-        name: 1,
-        hit: 1,
-        rateFire: 1
-    })
+
+    const [rating, setRating] = useSort(setInitialData, 'rating');
+    const [name, setName] = useSort(setInitialData, 'name');
+    const [hit, setHit] = useSort(setInitialData, 'hit');
+    const [rateFire, setRateFire] = useSort(setInitialData, 'rateFire');
 
     useEffect(() => {
-        searchText === ' ' ?
+        searchText.trim() === '' ?
             setData(initialData) :
             setData(initialData.filter(x => x
                 .name
@@ -35,25 +36,24 @@ const App = () => {
     }, [searchText, setData, initialData]);
 
 
-    useSort(setInitialData, sortState, 'name');
-    useSort(setInitialData, sortState, 'hit');
-    useSort(setInitialData, sortState, 'rateFire');
-
     useEffect(() => {
         setInitialData(initialData);
     }, [initialData])
 
+    const onRatingClick = () => {
+        setRating(prev => prev * -1);
+    }
 
     const onNameClick = () => {
-        setSortState(prev => ({...prev, name: prev.name * -1}));
+        setName(prev => prev * -1);
     }
 
     const onHitClick = () => {
-        setSortState(prev => ({...prev, hit: prev.hit * -1}));
+        setHit(prev => prev * -1);
     }
 
     const onRateFireClick = () => {
-        setSortState(prev => ({...prev, rateFire: prev.rateFire * -1}));
+        setRateFire(prev => prev * -1);
     }
 
     return (
@@ -67,10 +67,10 @@ const App = () => {
                 <Table className={classes.table} striped bordered hover>
                     <thead className={classes.tableHead}>
                     <tr>
-                        <th>№</th>
-                        <th onClick={onNameClick}>Имя</th>
-                        <th onClick={onHitClick}>Попадание</th>
-                        <th onClick={onRateFireClick}>Скорострельность</th>
+                        <th onClick={onRatingClick}>№&nbsp;{<SortIcon up={rating === 1}/>}</th>
+                        <th onClick={onNameClick}>Имя&nbsp;{<SortIcon up={name === 1}/>}</th>
+                        <th onClick={onHitClick}>Попадание&nbsp;{<SortIcon up={hit === 1}/>}</th>
+                        <th onClick={onRateFireClick}>Скорострельность&nbsp;{<SortIcon up={rateFire === 1}/>}</th>
                     </tr>
                     </thead>
                     <tbody>
